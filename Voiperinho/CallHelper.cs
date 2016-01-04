@@ -1,15 +1,18 @@
 ﻿using NAudio.Wave;
+using System;
 
 namespace Voiperinho
 {
     public class CallHelper
     {
-        private WaveIn waveIn;
+        private WaveInEvent waveIn;
         private DirectSoundOut waveOut;
-        private WaveInProvider waveProvider;
+        private BufferedWaveProvider waveProvider;
+        private SpeexCodec codec;
         private volatile bool isCallEstablished;
+        private string callId;
 
-        public delegate void CallHelperDataAvailable(object sender, WaveInEventArgs e);
+        public delegate void CallHelperDataAvailable(byte[] encodedData);
         public event CallHelperDataAvailable DataAvailable;
 
         public bool IsCallEstablished
@@ -17,27 +20,47 @@ namespace Voiperinho
             get { return this.isCallEstablished; }
         }
 
-        public CallHelper()
+        public string CallId
         {
-            this.isCallEstablished = false;
+            get { return this.callId; }
         }
 
-        public void EstablishCall()
+        public CallHelper()
         {
-            this.waveIn = new WaveIn();
-            this.waveOut = new DirectSoundOut(DirectSoundOut.DSDEVID_DefaultPlayback, 50);
+            this.isCallEstablished = true;
+            this.codec = new NarrowBandSpeexCodec();
+        }
+
+        private string GenerateCallId()
+        {
+            // "n" parameter in ToString is used to remove dashes (-) between the values
+            return Guid.NewGuid().ToString("n").Substring(0, 16);
+        }
+
+        public void EstablishCall(string callIdentificator = "")
+        {
+            this.waveIn = new WaveInEvent();
 
             waveIn.DeviceNumber = 0;
-            waveIn.WaveFormat = new WaveFormat(44100, 16, WaveIn.GetCapabilities(0).Channels);
+            waveIn.WaveFormat = this.codec.RecordFormat;
+            waveIn.BufferMilliseconds = 50;
             waveIn.DataAvailable += waveIn_DataAvailable;
 
-            waveProvider = new WaveInProvider(waveIn);
+            waveOut = new DirectSoundOut();
+            waveProvider = new BufferedWaveProvider(codec.RecordFormat);
+            waveProvider.DiscardOnBufferOverflow = true;
+            waveProvider.BufferLength = 4096;
             waveOut.Init(waveProvider);
 
             waveIn.StartRecording();
             waveOut.Play();
 
             this.isCallEstablished = true;
+
+            if (callIdentificator == null || callIdentificator == string.Empty)
+                this.callId = GenerateCallId();
+            else
+                this.callId = callIdentificator;
         }
 
         public void CloseCall()
@@ -58,9 +81,18 @@ namespace Voiperinho
             this.isCallEstablished = false;
         }
 
+        public void AddSamples(byte[] data)
+        {
+            byte[] decodedData = this.codec.Decode(data, 0, data.Length);
+
+            this.waveProvider.AddSamples(decodedData, 0, decodedData.Length);
+        }
+
         private void waveIn_DataAvailable(object sender, WaveInEventArgs e)
         {
-            if (this.DataAvailable != null) this.DataAvailable.Invoke(sender, e);
+            byte[] encodedData = this.codec.Encode(e.Buffer, 0, e.BytesRecorded);
+
+            if (this.DataAvailable != null) this.DataAvailable.Invoke(encodedData);
         }
     }
 }

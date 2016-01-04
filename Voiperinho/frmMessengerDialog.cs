@@ -19,7 +19,7 @@ namespace Voiperinho
         private List<RequestInformation> requests;
         private AccountInformation accountInfo;
         private List<UserInfoContainer> listContactContainer;
-        private List<MessagerContainer> listMessengerContainer;
+        private List<MessengerContainer> listMessengerContainer;
         private RequestContainer requestContainer;
         private Panel pnlAvailableUsers;
         private Panel pnlAvailableRequests;
@@ -50,6 +50,7 @@ namespace Voiperinho
 
             socketHelper = new SocketConnectionHelper();
             socketHelper.SocketDataReceived += socketHelper_SocketDataReceived;
+            socketHelper.ServerSocketClosed += socketHelper_ServerSocketClosed;
         }
 
         #endregion
@@ -59,12 +60,17 @@ namespace Voiperinho
         private void frmMessengerDialog_Load(object sender, EventArgs e)
         {
             this.listContactContainer = new List<UserInfoContainer>();
-            this.listMessengerContainer = new List<MessagerContainer>();
+            this.listMessengerContainer = new List<MessengerContainer>();
 
             this.isApplicationClosing = false;
             this.isSearchViewLoaded = false;
 
             this.lblContactsList.Font = MetroFramework.MetroFonts.Subtitle;
+        }
+
+        private void socketHelper_ServerSocketClosed()
+        {
+            this.UpdateClientOnDisconnect();
         }
 
         private void socketHelper_SocketDataReceived(string data)
@@ -99,6 +105,7 @@ namespace Voiperinho
             }
 
             Message message = Message.CreateMessageObject(data);
+            bool isCallContent = false;
 
             if (message == null || (message.Command.Equals("/disconnect") && message.Content.Equals("OK")))
             {
@@ -168,11 +175,85 @@ namespace Voiperinho
 
                 return;
             }
+            else if (message.Command.Contains("call"))
+            {
+                isCallContent = true; // We set it to true to avoid dumping call ID's into the message box
 
-            if (message.Sender == this.accountInfo.Username)
-                this.DumpMessage(message.Content);
-            else
-                this.DumpMessage(message.Content, message.Sender);
+                if (message.Command.Equals("/call"))
+                {
+                    MessengerContainer msgWindow = GetActiveContainer(message.Sender);
+                    if (msgWindow != null)
+                    {
+                        msgWindow.CreateCallDialog(message.Sender);
+                        msgWindow.callDialog.CallStateChanged += callDialog_CallStateChanged;
+                    }
+                }
+                else if (message.Command.Contains("/accept"))
+                {
+                    MessengerContainer msgWindow = GetActiveContainer(message.Sender);
+
+                    if (msgWindow != null) msgWindow.InitiatingCall = false;
+
+                    this.socketHelper.EstablishCall(message.Content);
+                }
+                else if (message.Command.Contains("/close"))
+                {
+                    if (this.socketHelper.CallHelper != null)
+                    {
+                        this.socketHelper.CallHelper.CloseCall();
+                    }
+
+                    MessengerContainer msgWindow = GetActiveContainer(message.Sender);
+                    if (msgWindow != null)
+                    {
+                        msgWindow.InitiatingCall = false;
+
+                        msgWindow.UpdateCallState();
+                        msgWindow.callDialog.CallStateChanged -= callDialog_CallStateChanged;
+                    }
+                }
+            }
+
+            if (message.Content != string.Empty && !isCallContent)
+            {
+                if (message.Sender == this.accountInfo.Username)
+                    this.DumpMessage(message, true);
+                else
+                {
+                    this.DumpMessage(message);
+                    SetContainerNotification(message.Sender);
+                }
+            }
+        }
+
+        private void callDialog_CallStateChanged(bool state, string caller)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => callDialog_CallStateChanged(state, caller)));
+                return;
+            }
+
+            MessengerContainer msgWindow = GetActiveContainer();
+
+            if (msgWindow != null)
+            {
+                if (state)
+                {
+                    this.socketHelper.EstablishCall();
+                    this.socketHelper.SendMessage(caller, socketHelper.CallHelper.CallId, this.accountInfo.Username, @"/call/accept");
+                }
+                else
+                {
+                    msgWindow.callDialog.CallStateChanged -= callDialog_CallStateChanged;
+                    this.socketHelper.SendMessage(caller, "", this.accountInfo.Username, @"/call/close");
+                }
+
+                if (msgWindow.InitiatingCall)
+                    msgWindow.InitiatingCall = false;
+    
+                msgWindow.UpdateCallState();
+            }
         }
 
         private void connectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -220,6 +301,11 @@ namespace Voiperinho
             {
                 this.frmAuthDialog.Focus();
             }
+        }
+
+        private void messagerContainer_InputBoxFocused()
+        {
+            RemoveContainerNotification();
         }
 
         private void UserInfoContainer_RequestRejected(object sender)
@@ -330,6 +416,7 @@ namespace Voiperinho
                 }
             }
 
+            contactContainer.IsNotificationReceived = false;
             contactContainer.IsSelected = true;
             contactContainer.HighlightContainer();
         }
@@ -374,13 +461,12 @@ namespace Voiperinho
 
             socketHelper.Disconnect();
 
-            this.DumpMessage("Disconnected!");
             this.lblResponseDescription.Text = "Status - Disconnected.";
         }
 
         private void frmMessengerDialog_KeyDown(object sender, KeyEventArgs e)
         {
-            MessagerContainer msgWindow = GetActiveContainer();
+            MessengerContainer msgWindow = GetActiveContainer();
 
             if (msgWindow != null)
             {
@@ -440,25 +526,26 @@ namespace Voiperinho
             // Hide the picturebox with the logo
             this.pboxLogo.Hide();
 
-            MessagerContainer messagerContainer = new MessagerContainer(this, this.accountInfo);          
-            messagerContainer.Location = new Point(260, 45);
+            MessengerContainer messagerContainer = new MessengerContainer(this, this.accountInfo);          
+            messagerContainer.Location = new Point(250, 24);
             messagerContainer.Name = "messenger_" + messengerIdentifier;
 
             messagerContainer.MouseClick += messagerContainer_MouseClick;
+            messagerContainer.InputBoxFocused += messagerContainer_InputBoxFocused;
 
             Controls.Add(messagerContainer);
 
             messagerContainer.inputContainer.Focus();
 
             this.listMessengerContainer.Add(messagerContainer);
-            this.DumpMessage("Client started.");
+            this.DumpMessage(Environment.NewLine + "\tClient started.");
         }
 
         private void ClearMessengerLayouts()
         {
             for (int i = this.Controls.Count - 1; i > 0; i--)
             {
-                if (this.Controls[i] is MessagerContainer)
+                if (this.Controls[i] is MessengerContainer)
                 {
                     this.Controls.Remove(this.Controls[i]);
                 }
@@ -467,13 +554,13 @@ namespace Voiperinho
             this.Invalidate();
         }
 
-        private MessagerContainer GetActiveContainer()
+        private MessengerContainer GetActiveContainer()
         {
             foreach (Control control in this.Controls)
             {
-                if (control is MessagerContainer)
+                if (control is MessengerContainer)
                 {
-                    foreach (MessagerContainer container in this.listMessengerContainer)
+                    foreach (MessengerContainer container in this.listMessengerContainer)
                     {
                         if (container.Name == control.Name && container.Visible) return container;
                     }
@@ -483,13 +570,13 @@ namespace Voiperinho
             return null;
         }
 
-        private MessagerContainer GetActiveContainer(string contact)
+        private MessengerContainer GetActiveContainer(string contact)
         {
             foreach (Control control in this.Controls)
             {
-                if (control is MessagerContainer)
+                if (control is MessengerContainer)
                 {
-                    foreach (MessagerContainer container in this.listMessengerContainer)
+                    foreach (MessengerContainer container in this.listMessengerContainer)
                     {
                         if (container.Name.Contains(contact)) return container;
                     }
@@ -502,9 +589,9 @@ namespace Voiperinho
         private void LoadMessengerLayout(string identifier)
         {
             bool windowExists = false;
-            MessagerContainer msgWindow = null;
+            MessengerContainer msgWindow = null;
 
-            foreach (MessagerContainer window in this.listMessengerContainer)
+            foreach (MessengerContainer window in this.listMessengerContainer)
             {
                 if (window.Name.Contains(identifier.ToString()))
                 {
@@ -722,11 +809,49 @@ namespace Voiperinho
             }
         }
 
+        private void SetContainerNotification(string username)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => SetContainerNotification(username)));
+                return;
+            }
+
+            foreach (UserInfoContainer contactContainer in this.listContactContainer)
+            {
+                if (username != null && username != string.Empty)
+                {
+                    if (contactContainer.Username == username)
+                    {
+                        contactContainer.IsNotificationReceived = true;
+                        contactContainer.Invalidate();
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void RemoveContainerNotification()
+        {
+            foreach (UserInfoContainer contactContainer in this.listContactContainer)
+            {
+                if (contactContainer.IsSelected)
+                {
+                    contactContainer.IsNotificationReceived = false;
+                    contactContainer.Invalidate();
+                    break;
+                }
+            }
+        }
+
         private void ClearContactsContainer()
         {
             for (int i = pnlContactsContainer.Controls.Count - 1; i > 0; i--)
                 if (pnlContactsContainer.Controls[i] is UserInfoContainer)
-                    this.pnlContactsContainer.Controls.Remove(pnlContactsContainer.Controls[i]);
+                {
+                    this.pnlContactsContainer.Controls[i].MouseClick -= contactBox_MouseClick;
+                    this.pnlContactsContainer.Controls.RemoveAt(i);
+                }
 
             if (this.pnlAvailableRequests != null) this.pnlContactsContainer.Controls.Remove(this.pnlAvailableRequests);
 
@@ -740,7 +865,10 @@ namespace Voiperinho
 
             for (int i = this.pnlAvailableUsers.Controls.Count - 1; i > 0; i--)
                 if (this.pnlAvailableUsers.Controls[i] is UserInfoContainer)
+                {
+                    this.pnlAvailableUsers.Controls[i].MouseClick -= contactBox_MouseClick;
                     this.pnlAvailableUsers.Controls.RemoveAt(i);
+                }
 
             this.pnlAvailableUsers.Invalidate();
         }
@@ -749,21 +877,36 @@ namespace Voiperinho
 
         #region Utility Methods
 
-        private void DumpMessage(string message, string contact = "")
+        private void DumpMessage(Message message, bool isSender = false)
         {
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => DumpMessage(message, contact)));
+                this.Invoke(new Action(() => DumpMessage(message, isSender)));
                 return;
             }
 
-            MessagerContainer msgWindow;
+            MessengerContainer msgWindow;
 
-            msgWindow = (contact != "") ? GetActiveContainer(contact) : GetActiveContainer();
+            msgWindow = (message.Sender != null && message.Sender != this.accountInfo.Username) ? GetActiveContainer(message.Sender) : GetActiveContainer();
 
             if (msgWindow != null)
             {
-                msgWindow.AppendText("       " + message + Environment.NewLine);
+                msgWindow.AppendText(message);
+                msgWindow.inputContainer.Text = string.Empty;
+                msgWindow.inputContainer.Focus();
+            }
+        }
+
+        private void DumpMessage(string message)
+        {
+            MessengerContainer msgWindow;
+
+            msgWindow = GetActiveContainer();
+
+            if (msgWindow != null)
+            {
+                msgWindow.AppendText("\t" + message + Environment.NewLine);
+
                 msgWindow.inputContainer.Text = string.Empty;
                 msgWindow.inputContainer.Focus();
             }
@@ -829,7 +972,7 @@ namespace Voiperinho
 
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => UpdateClientOnDisconnect()));
+                this.BeginInvoke(new Action(() => UpdateClientOnDisconnect()));
                 return;
             }
 

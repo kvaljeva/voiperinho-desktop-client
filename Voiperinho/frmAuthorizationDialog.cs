@@ -13,7 +13,7 @@ namespace Voiperinho
         {
             InitializeComponent();
 
-            this.Icon = Resources.loginIcon;
+            this.Icon = Resources.LoginIcon;
             this.isLoginClicked = false;
         }
 

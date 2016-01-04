@@ -37,6 +37,12 @@ namespace Voiperinho
             set { this.isSelected = value; }
         }
         
+        public bool IsNotificationReceived
+        {
+            get { return this.pboxNotification.Visible; }
+            set { this.pboxNotification.Visible = value; }
+        }
+
         public bool IsRequest
         {
             get { return this.isRequest; }
@@ -62,6 +68,8 @@ namespace Voiperinho
             this.userId = id;
             this.avatar = avatar;
             this.isSelected = false;
+            this.pboxNotification.Visible = false;
+            this.pboxNotification.Parent = this.pboxAvatar;
             this.isContact = isContact;
 
             this.lblContactUsername.ForeColor = Color.White;
@@ -70,7 +78,7 @@ namespace Voiperinho
             if (isContact)
                 this.pboxOptions2.Image = Resources.OfflineIcon;
             else
-                this.pboxOptions2.Image = Resources.inactiveAddIcon;
+                this.pboxOptions2.Image = Resources.InactiveAddIcon;
 
             if (avatar == null)
             {
@@ -89,8 +97,8 @@ namespace Voiperinho
             this.lblContactUsername.ForeColor = Color.White;
             this.lblContactUsername.Text = this.username;
 
-            this.pboxOptions1.Image = Resources.inactiveConfirmIcon;
-            this.pboxOptions2.Image = Resources.inactiveDeleteIcon;
+            this.pboxOptions1.Image = Resources.InactiveConfirmIcon;
+            this.pboxOptions2.Image = Resources.InactiveDeleteIcon;
 
             this.isRequest = true;
 
@@ -153,12 +161,12 @@ namespace Voiperinho
                 if (!this.isRequest)
                 {
                     this.informationTooltip.Show("Send request", this.pboxOptions2);
-                    this.pboxOptions2.Image = Resources.activeAddIcon;
+                    this.pboxOptions2.Image = Resources.ActiveAddIcon;
                 }
                 else
                 {
                     this.informationTooltip.Show("Delete request", this.pboxOptions2);
-                    this.pboxOptions2.Image = Resources.activeDeleteIcon;
+                    this.pboxOptions2.Image = Resources.ActiveDeleteIcon;
                 }
             }
         }
@@ -171,11 +179,11 @@ namespace Voiperinho
             {
                 if (!this.isRequest)
                 {
-                    this.pboxOptions2.Image = Resources.inactiveAddIcon;
+                    this.pboxOptions2.Image = Resources.InactiveAddIcon;
                 }
                 else
                 {
-                    this.pboxOptions2.Image = Resources.inactiveDeleteIcon;
+                    this.pboxOptions2.Image = Resources.InactiveDeleteIcon;
                 }
             }
         }
@@ -208,7 +216,7 @@ namespace Voiperinho
         {
             if (this.isRequest)
             {
-                this.pboxOptions1.Image = Resources.activeConfirmIcon;
+                this.pboxOptions1.Image = Resources.ActiveConfirmIcon;
             }
         }
 
@@ -216,7 +224,7 @@ namespace Voiperinho
         {
             if (this.isRequest)
             {
-                this.pboxOptions1.Image = Resources.inactiveConfirmIcon;
+                this.pboxOptions1.Image = Resources.InactiveConfirmIcon;
             }
         }
 

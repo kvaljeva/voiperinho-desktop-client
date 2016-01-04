@@ -48,7 +48,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NSpeex">
+      <HintPath>D:\NSpeex.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -61,11 +65,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CallHelper.cs" />
-    <Compile Include="MessagerContainer.cs">
+    <Compile Include="IncomingCallDialog.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="MessagerContainer.Designer.cs">
-      <DependentUpon>MessagerContainer.cs</DependentUpon>
+    <Compile Include="IncomingCallDialog.Designer.cs">
+      <DependentUpon>IncomingCallDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="INetworkCodec.cs" />
+    <Compile Include="MessengerContainer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MessengerContainer.Designer.cs">
+      <DependentUpon>MessengerContainer.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountInformation.cs" />
     <Compile Include="Models\BaseResponse.cs" />
@@ -85,6 +96,8 @@
     </Compile>
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\RequestInformation.cs" />
+    <Compile Include="Network\UdpReceiver.cs" />
+    <Compile Include="SpeexCodec.cs" />
     <Compile Include="UserInfoContainer.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -104,7 +117,6 @@
     <Compile Include="RoundedPicturebox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="SerializationHelper.cs" />
     <Compile Include="SocketConnectionHelper.cs" />
     <Compile Include="Network\WebConnector.cs" />
     <EmbeddedResource Include="frmAuthorizationDialog.resx">
@@ -113,8 +125,11 @@
     <EmbeddedResource Include="frmMessengerDialog.resx">
       <DependentUpon>frmMessengerDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MessagerContainer.resx">
-      <DependentUpon>MessagerContainer.cs</DependentUpon>
+    <EmbeddedResource Include="IncomingCallDialog.resx">
+      <DependentUpon>IncomingCallDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MessengerContainer.resx">
+      <DependentUpon>MessengerContainer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UserInfoContainer.resx">
       <DependentUpon>UserInfoContainer.cs</DependentUpon>
@@ -147,58 +162,31 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\OfflineIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\OnlineIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\SendIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\SendIconActive.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\FallbackImage.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\SearchIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\dialogBubbleImage.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\activeAddIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\inactiveAddIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\activeConfirmIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\activeDeleteIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\inactiveConfirmIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\inactiveDeleteIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\gradientStatusBar.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\loginIcon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\watermarkLogo.png" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="Resources\AcceptCallIcon.png" />
+    <None Include="Resources\ActiveAcceptCallIcon.png" />
+    <Content Include="Resources\ActiveAddIcon.png" />
+    <Content Include="Resources\ActiveCallIcon.png" />
+    <Content Include="Resources\ActiveConfirmIcon.png" />
+    <None Include="Resources\ActiveDeclineCallIcon.png" />
+    <Content Include="Resources\ActiveDeleteIcon.png" />
+    <None Include="Resources\ActiveEndCallIcon.png" />
     <None Include="Resources\CallIcon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\EndCallIcon.png" />
+    <None Include="Resources\DeclineCallIcon.png" />
+    <Content Include="Resources\DialogBubbleImage.png" />
+    <Content Include="Resources\EndCallIcon.png" />
+    <Content Include="Resources\FallbackImage.png" />
+    <Content Include="Resources\GradientStatusBar.png" />
+    <Content Include="Resources\InactiveAddIcon.png" />
+    <Content Include="Resources\InactiveConfirmIcon.png" />
+    <Content Include="Resources\InactiveDeleteIcon.png" />
+    <Content Include="Resources\LoginIcon.ico" />
+    <None Include="Resources\NotificationIcon.png" />
+    <Content Include="Resources\OfflineIcon.png" />
+    <Content Include="Resources\OnlineIcon.png" />
+    <Content Include="Resources\SearchIcon.png" />
+    <Content Include="Resources\SendIcon.png" />
+    <Content Include="Resources\SendIconActive.png" />
+    <Content Include="Resources\WatermarkLogo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

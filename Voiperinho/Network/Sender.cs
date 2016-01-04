@@ -12,7 +12,6 @@ namespace Voiperinho.Network
         private bool isStreamOpen;
         private object monitor;
         private string message;
-        private byte[] voiceBytes;
 
         public delegate void SenderStateChangedEventHandler(int state);
         public SenderStateChangedEventHandler SenderStateChanged;
@@ -24,6 +23,7 @@ namespace Voiperinho.Network
             this.monitor = new object();
 
             senderThread = new Thread(Run);
+            senderThread.IsBackground = true;
             senderThread.Start();
         }
 

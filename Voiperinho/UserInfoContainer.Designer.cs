@@ -30,12 +30,14 @@
         {
             this.components = new System.ComponentModel.Container();
             this.lblContactUsername = new System.Windows.Forms.Label();
-            this.pboxOptions2 = new System.Windows.Forms.PictureBox();
             this.informationTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.pboxNotification = new System.Windows.Forms.PictureBox();
             this.pboxOptions1 = new System.Windows.Forms.PictureBox();
+            this.pboxOptions2 = new System.Windows.Forms.PictureBox();
             this.pboxAvatar = new Voiperinho.RoundedPicturebox();
-            ((System.ComponentModel.ISupportInitialize)(this.pboxOptions2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pboxNotification)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pboxOptions1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pboxOptions2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pboxAvatar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,16 +52,16 @@
             this.lblContactUsername.Text = "$username";
             this.lblContactUsername.MouseClick += new System.Windows.Forms.MouseEventHandler(this.lblContactUsername_MouseClick);
             // 
-            // pboxOptions2
+            // pboxNotification
             // 
-            this.pboxOptions2.Location = new System.Drawing.Point(226, 22);
-            this.pboxOptions2.Name = "pboxOptions2";
-            this.pboxOptions2.Size = new System.Drawing.Size(16, 16);
-            this.pboxOptions2.TabIndex = 2;
-            this.pboxOptions2.TabStop = false;
-            this.pboxOptions2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pboxStatus_MouseClick);
-            this.pboxOptions2.MouseEnter += new System.EventHandler(this.pboxStatus_MouseEnter);
-            this.pboxOptions2.MouseLeave += new System.EventHandler(this.pboxStatus_MouseLeave);
+            this.pboxNotification.BackColor = System.Drawing.Color.Transparent;
+            this.pboxNotification.Image = global::Voiperinho.Properties.Resources.NotificationIcon;
+            this.pboxNotification.Location = new System.Drawing.Point(34, -1);
+            this.pboxNotification.Name = "pboxNotification";
+            this.pboxNotification.Size = new System.Drawing.Size(16, 16);
+            this.pboxNotification.TabIndex = 5;
+            this.pboxNotification.TabStop = false;
+            this.informationTooltip.SetToolTip(this.pboxNotification, "New message received");
             // 
             // pboxOptions1
             // 
@@ -71,6 +73,17 @@
             this.pboxOptions1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pboxOptions1_MouseClick);
             this.pboxOptions1.MouseEnter += new System.EventHandler(this.pboxOptions1_MouseEnter);
             this.pboxOptions1.MouseLeave += new System.EventHandler(this.pboxOptions1_MouseLeave);
+            // 
+            // pboxOptions2
+            // 
+            this.pboxOptions2.Location = new System.Drawing.Point(226, 22);
+            this.pboxOptions2.Name = "pboxOptions2";
+            this.pboxOptions2.Size = new System.Drawing.Size(16, 16);
+            this.pboxOptions2.TabIndex = 2;
+            this.pboxOptions2.TabStop = false;
+            this.pboxOptions2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pboxStatus_MouseClick);
+            this.pboxOptions2.MouseEnter += new System.EventHandler(this.pboxStatus_MouseEnter);
+            this.pboxOptions2.MouseLeave += new System.EventHandler(this.pboxStatus_MouseLeave);
             // 
             // pboxAvatar
             // 
@@ -85,14 +98,16 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.pboxNotification);
             this.Controls.Add(this.pboxOptions1);
             this.Controls.Add(this.pboxAvatar);
             this.Controls.Add(this.pboxOptions2);
             this.Controls.Add(this.lblContactUsername);
             this.Name = "UserInfoContainer";
             this.Size = new System.Drawing.Size(250, 60);
-            ((System.ComponentModel.ISupportInitialize)(this.pboxOptions2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pboxNotification)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pboxOptions1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pboxOptions2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pboxAvatar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -106,5 +121,6 @@
         private RoundedPicturebox pboxAvatar;
         private System.Windows.Forms.ToolTip informationTooltip;
         private System.Windows.Forms.PictureBox pboxOptions1;
+        private System.Windows.Forms.PictureBox pboxNotification;
     }
 }

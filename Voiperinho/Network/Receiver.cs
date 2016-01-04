@@ -22,6 +22,7 @@ namespace Voiperinho.Network
             this.bufferSize = buffSize;
 
             recvThread = new Thread(Run);
+            recvThread.IsBackground = true;
             recvThread.Start();
         }
 
@@ -39,6 +40,8 @@ namespace Voiperinho.Network
                         }
                         else
                         {
+                            if (!this.isStreamOpen) break;
+
                             string socketStringData = string.Empty;
                             byte[] inputStream = new byte[65536];
 
@@ -47,7 +50,6 @@ namespace Voiperinho.Network
 
                             if (OnDataReceived != null) this.OnDataReceived.Invoke(socketStringData);
                         }
-
                     }
                     catch (IOException iex)
                     {

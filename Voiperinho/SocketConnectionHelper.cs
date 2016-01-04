@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
+using System.Windows.Forms;
 using Voiperinho.Network;
 
 namespace Voiperinho
@@ -12,7 +14,8 @@ namespace Voiperinho
         private NetworkStream serverStream;
         private TcpClient clientSocket;
         private UdpClient udpSender;
-        private UdpClient udpReceiver;
+        private UdpReceiver udpReceiver;
+        private CallHelper callHelper;
         private Receiver receiver;
         private Sender sender;
         private bool isAuthorized;
@@ -23,6 +26,9 @@ namespace Voiperinho
 
         public delegate void SocketDataReceivedEventHandler(string data);
         public SocketDataReceivedEventHandler SocketDataReceived;
+
+        public delegate void ServerSocketCloseEventHandler();
+        public ServerSocketCloseEventHandler ServerSocketClosed;
 
         public bool IsAuthorized
         {
@@ -40,6 +46,11 @@ namespace Voiperinho
         {
             get { return this.isHandshake; }
             set { this.isHandshake = value; }
+        }
+
+        public CallHelper CallHelper
+        {
+            get { return this.callHelper; }
         }
 
         // Constructor
@@ -61,10 +72,16 @@ namespace Voiperinho
             this.isAuthorized = false;
             this.isConnectionEstablished = false;
 
+            this.receiver.OnDataReceived -= receiver_onDataReceived;
+            this.sender.SenderStateChanged -= sender_onStateChanged;
+
             this.receiver.StopReceiver();
             this.sender.StopSender();
 
             this.clientSocket.Close();
+
+            if (this.callHelper != null)
+                this.callHelper.CloseCall();
         }
 
         private void SendToSocket(string message)
@@ -102,13 +119,15 @@ namespace Voiperinho
         {
             if (state == -1)
             {
-                this.ForceCloseConnection();
+                if (this.ServerSocketClosed != null) this.ServerSocketClosed.Invoke();
+
+                this.CloseConnection();
             }
         }
 
         private void receiver_onDataReceived(string data)
         {
-            if (this.SocketDataReceived != null) this.SocketDataReceived.Invoke(data);
+            if (this.SocketDataReceived != null && data != string.Empty) this.SocketDataReceived.Invoke(data);
         }
 
         public bool TryAuthorize(string username, string password)
@@ -128,13 +147,6 @@ namespace Voiperinho
             {
                 this.SendToSocket(Message.FormatMessageString("", "", "", "/disconnect"));
             }
-        }
-
-        public void ForceCloseConnection()
-        {
-            this.receiver.StopReceiver();
-            this.sender.StopSender();
-            this.clientSocket.Close();
         }
 
         public void SendMessage(string contact, string sender, string content)
@@ -164,37 +176,77 @@ namespace Voiperinho
             this.SendToSocket(Message.FormatMessageString(contact, content, sender, command));
         }
 
-        public void SendVoice(string contact, byte[] soundArray, string sender)
-        {
-            if (!this.isAuthorized)
-                return;
-
-            this.SendToSocket(Message.FormatMessageString(contact, soundArray.ToString(), sender, "/call"));
-        }
-
-        public bool InititateCallConnection()
+        private bool InititateCallConnection()
         {
             if (!this.isConnectionEstablished) return false;
 
-            udpReceiver = new UdpClient();
-            udpSender = new UdpClient();
-
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9999);
+
+            udpReceiver = new UdpReceiver(endPoint);
+            udpReceiver.SocketDataReceived += udpReceiver_SocketDataReceived;
+
+            udpSender = new UdpClient();
+            udpSender.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
             try
             {
-                udpReceiver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                udpReceiver.Client.Bind(endPoint);
-
-                udpSender.Client.Bind(endPoint);
+                udpSender.Connect(endPoint);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("An error occurred while trying to establish call connection: " + ex.Message);
+                this.udpSender.Close();
+
                 return false;
             }
 
             return true;
+        }
+
+        private void udpReceiver_SocketDataReceived(byte[] data)
+        {
+            this.callHelper.AddSamples(data);
+        }
+
+        public void EstablishCall(string id = "")
+        {
+            if (this.InititateCallConnection())
+            {
+                this.callHelper = new CallHelper();
+                this.callHelper.DataAvailable += callHelper_DataAvailable;
+                
+                // Start recording voice to byte array
+                this.callHelper.EstablishCall(id);
+            }
+        }
+    
+        public void CloseCall(string receiver, string sender, string id)
+        {
+            if (this.callHelper != null && this.callHelper.IsCallEstablished)
+            {
+                this.udpReceiver.StopReceiver();
+                this.udpReceiver.SocketDataReceived -= udpReceiver_SocketDataReceived;
+
+                this.callHelper.CloseCall();
+                this.callHelper.DataAvailable -= callHelper_DataAvailable;
+
+                this.SendMessage(receiver, id, sender, "/call/close");
+            }
+        }
+
+        public void ForceCloseCall(string receiver, string sender, string id)
+        {
+            this.SendMessage(receiver, id, sender, "/call/close");
+        }
+
+        private void callHelper_DataAvailable(byte[] encodedData)
+        {
+            this.SendUdpPacket(encodedData);
+        }
+
+        private void SendUdpPacket(byte[] bytesArray)
+        {
+            udpSender.Send(bytesArray, bytesArray.Length);
         }
     }
 }

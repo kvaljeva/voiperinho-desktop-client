@@ -4,11 +4,18 @@ namespace Voiperinho
 {
     public class Message
     {
+        private string timestamp;
         private string sender;
         private string receiver;
         private string command;
         private string content;
 
+        [JsonProperty(PropertyName = "timestamp")]
+        public string Timestamp
+        {
+            get { return this.timestamp; }
+            set { this.timestamp = value; }
+        }
         [JsonProperty(PropertyName = "sender")]
         public string Sender
         {
@@ -34,12 +41,13 @@ namespace Voiperinho
             set { this.content = value; }
         }
 
-        public Message(string receiver, string command, string message, string sender)
+        public Message(string receiver, string command, string message, string sender, string timestamp = "")
         {
             this.receiver = receiver;
             this.command = command;
             this.content = message;
             this.sender = sender;
+            this.timestamp = timestamp;
         }
 
         public static string FormatMessageString(string receiver, string message, string sender, string command = "")

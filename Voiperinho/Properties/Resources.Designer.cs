@@ -63,9 +63,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap activeAddIcon {
+        internal static System.Drawing.Bitmap AcceptCallIcon {
             get {
-                object obj = ResourceManager.GetObject("activeAddIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("AcceptCallIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap activeConfirmIcon {
+        internal static System.Drawing.Bitmap ActiveAcceptCallIcon {
             get {
-                object obj = ResourceManager.GetObject("activeConfirmIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("ActiveAcceptCallIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -83,9 +83,59 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap activeDeleteIcon {
+        internal static System.Drawing.Bitmap ActiveAddIcon {
             get {
-                object obj = ResourceManager.GetObject("activeDeleteIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("ActiveAddIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ActiveCallIcon {
+            get {
+                object obj = ResourceManager.GetObject("ActiveCallIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ActiveConfirmIcon {
+            get {
+                object obj = ResourceManager.GetObject("ActiveConfirmIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ActiveDeclineCallIcon {
+            get {
+                object obj = ResourceManager.GetObject("ActiveDeclineCallIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ActiveDeleteIcon {
+            get {
+                object obj = ResourceManager.GetObject("ActiveDeleteIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ActiveEndCallIcon {
+            get {
+                object obj = ResourceManager.GetObject("ActiveEndCallIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +153,19 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap dialogBubbleImage {
+        internal static System.Drawing.Bitmap DeclineCallIcon {
             get {
-                object obj = ResourceManager.GetObject("dialogBubbleImage", resourceCulture);
+                object obj = ResourceManager.GetObject("DeclineCallIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap DialogBubbleImage {
+            get {
+                object obj = ResourceManager.GetObject("DialogBubbleImage", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -133,9 +193,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap gradientStatusBar {
+        internal static System.Drawing.Bitmap GradientStatusBar {
             get {
-                object obj = ResourceManager.GetObject("gradientStatusBar", resourceCulture);
+                object obj = ResourceManager.GetObject("GradientStatusBar", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -143,9 +203,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap inactiveAddIcon {
+        internal static System.Drawing.Bitmap InactiveAddIcon {
             get {
-                object obj = ResourceManager.GetObject("inactiveAddIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("InactiveAddIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -153,9 +213,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap inactiveConfirmIcon {
+        internal static System.Drawing.Bitmap InactiveConfirmIcon {
             get {
-                object obj = ResourceManager.GetObject("inactiveConfirmIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("InactiveConfirmIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -163,9 +223,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap inactiveDeleteIcon {
+        internal static System.Drawing.Bitmap InactiveDeleteIcon {
             get {
-                object obj = ResourceManager.GetObject("inactiveDeleteIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("InactiveDeleteIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -173,10 +233,20 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon loginIcon {
+        internal static System.Drawing.Icon LoginIcon {
             get {
-                object obj = ResourceManager.GetObject("loginIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("LoginIcon", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap NotificationIcon {
+            get {
+                object obj = ResourceManager.GetObject("NotificationIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -233,9 +303,9 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap watermarkLogo {
+        internal static System.Drawing.Bitmap WatermarkLogo {
             get {
-                object obj = ResourceManager.GetObject("watermarkLogo", resourceCulture);
+                object obj = ResourceManager.GetObject("WatermarkLogo", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
