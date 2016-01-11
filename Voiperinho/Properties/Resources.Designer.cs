@@ -151,6 +151,15 @@ namespace Voiperinho.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream CallSound {
+            get {
+                return ResourceManager.GetStream("CallSound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap DeclineCallIcon {
@@ -163,20 +172,20 @@ namespace Voiperinho.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap DialogBubbleImage {
+        internal static System.Drawing.Bitmap EndCallIcon {
             get {
-                object obj = ResourceManager.GetObject("DialogBubbleImage", resourceCulture);
+                object obj = ResourceManager.GetObject("EndCallIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Bitmap EndCallIcon {
+        internal static System.Drawing.Icon errorIcon {
             get {
-                object obj = ResourceManager.GetObject("EndCallIcon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("errorIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -251,6 +260,15 @@ namespace Voiperinho.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream NotificationSound {
+            get {
+                return ResourceManager.GetStream("NotificationSound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap OfflineIcon {
@@ -266,6 +284,16 @@ namespace Voiperinho.Properties {
         internal static System.Drawing.Bitmap OnlineIcon {
             get {
                 object obj = ResourceManager.GetObject("OnlineIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap RequestDialogContainer {
+            get {
+                object obj = ResourceManager.GetObject("RequestDialogContainer", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -11,6 +11,22 @@
     <AssemblyName>Voiperinho</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>4</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,6 +46,18 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>29B2FB2AD631C7433A941CF2B1140BC7C209A1D7</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Voiperinho_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MetroFramework">
@@ -64,74 +92,84 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CallHelper.cs" />
-    <Compile Include="IncomingCallDialog.cs">
+    <Compile Include="Helpers\CallHelper.cs" />
+    <Compile Include="Helpers\ErrorTracker.cs" />
+    <Compile Include="FrmRegistrationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRegistrationDialog.Designer.cs">
+      <DependentUpon>FrmRegistrationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterface\IncomingCallDialog.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="IncomingCallDialog.Designer.cs">
+    <Compile Include="UserInterface\IncomingCallDialog.Designer.cs">
       <DependentUpon>IncomingCallDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="INetworkCodec.cs" />
-    <Compile Include="MessengerContainer.cs">
+    <Compile Include="UserInterface\MessengerContainer.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="MessengerContainer.Designer.cs">
+    <Compile Include="UserInterface\MessengerContainer.Designer.cs">
       <DependentUpon>MessengerContainer.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountInformation.cs" />
     <Compile Include="Models\BaseResponse.cs" />
     <Compile Include="Models\BaseResponseList.cs" />
     <Compile Include="Models\ContactsInformation.cs" />
-    <Compile Include="frmAuthorizationDialog.cs">
+    <Compile Include="FrmAuthorizationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmAuthorizationDialog.Designer.cs">
-      <DependentUpon>frmAuthorizationDialog.cs</DependentUpon>
+    <Compile Include="FrmAuthorizationDialog.Designer.cs">
+      <DependentUpon>FrmAuthorizationDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmMessengerDialog.cs">
+    <Compile Include="FrmMessengerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmMessengerDialog.Designer.cs">
-      <DependentUpon>frmMessengerDialog.cs</DependentUpon>
+    <Compile Include="FrmMessengerDialog.Designer.cs">
+      <DependentUpon>FrmMessengerDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\RequestInformation.cs" />
     <Compile Include="Network\UdpReceiver.cs" />
     <Compile Include="SpeexCodec.cs" />
-    <Compile Include="UserInfoContainer.cs">
+    <Compile Include="UserInterface\UserInfoContainer.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserInfoContainer.Designer.cs">
+    <Compile Include="UserInterface\UserInfoContainer.Designer.cs">
       <DependentUpon>UserInfoContainer.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Network\Receiver.cs" />
     <Compile Include="Network\Sender.cs" />
-    <Compile Include="RequestContainer.cs">
+    <Compile Include="UserInterface\RequestContainer.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="RequestContainer.Designer.cs">
+    <Compile Include="UserInterface\RequestContainer.Designer.cs">
       <DependentUpon>RequestContainer.cs</DependentUpon>
     </Compile>
     <Compile Include="RoundedPicturebox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="SocketConnectionHelper.cs" />
+    <Compile Include="Helpers\SocketConnectionHelper.cs" />
     <Compile Include="Network\WebConnector.cs" />
-    <EmbeddedResource Include="frmAuthorizationDialog.resx">
-      <DependentUpon>frmAuthorizationDialog.cs</DependentUpon>
+    <EmbeddedResource Include="FrmAuthorizationDialog.resx">
+      <DependentUpon>FrmAuthorizationDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmMessengerDialog.resx">
-      <DependentUpon>frmMessengerDialog.cs</DependentUpon>
+    <EmbeddedResource Include="FrmMessengerDialog.resx">
+      <DependentUpon>FrmMessengerDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="IncomingCallDialog.resx">
+    <EmbeddedResource Include="FrmRegistrationDialog.resx">
+      <DependentUpon>FrmRegistrationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserInterface\IncomingCallDialog.resx">
       <DependentUpon>IncomingCallDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MessengerContainer.resx">
+    <EmbeddedResource Include="UserInterface\MessengerContainer.resx">
       <DependentUpon>MessengerContainer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UserInfoContainer.resx">
+    <EmbeddedResource Include="UserInterface\UserInfoContainer.resx">
       <DependentUpon>UserInfoContainer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -144,7 +182,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="RequestContainer.resx">
+    <EmbeddedResource Include="UserInterface\RequestContainer.resx">
       <DependentUpon>RequestContainer.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -157,6 +195,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Voiperinho_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -172,8 +211,9 @@
     <None Include="Resources\ActiveEndCallIcon.png" />
     <None Include="Resources\CallIcon.png" />
     <None Include="Resources\DeclineCallIcon.png" />
-    <Content Include="Resources\DialogBubbleImage.png" />
+    <None Include="Resources\CallSound.wav" />
     <Content Include="Resources\EndCallIcon.png" />
+    <None Include="Resources\errorIcon.ico" />
     <Content Include="Resources\FallbackImage.png" />
     <Content Include="Resources\GradientStatusBar.png" />
     <Content Include="Resources\InactiveAddIcon.png" />
@@ -181,12 +221,31 @@
     <Content Include="Resources\InactiveDeleteIcon.png" />
     <Content Include="Resources\LoginIcon.ico" />
     <None Include="Resources\NotificationIcon.png" />
+    <None Include="Resources\NotificationSound.wav" />
     <Content Include="Resources\OfflineIcon.png" />
     <Content Include="Resources\OnlineIcon.png" />
+    <None Include="Resources\RequestDialogContainer.png" />
     <Content Include="Resources\SearchIcon.png" />
     <Content Include="Resources\SendIcon.png" />
     <Content Include="Resources\SendIconActive.png" />
     <Content Include="Resources\WatermarkLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

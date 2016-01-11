@@ -72,16 +72,20 @@ namespace Voiperinho
         {
             FeedSamplesIntoEncoderInputBuffer(data, offset, length);
             int samplesToEncode = encoderInputBuffer.ShortBufferCount;
+
             if (samplesToEncode % encoder.FrameSize != 0)
             {
                 samplesToEncode -= samplesToEncode % encoder.FrameSize;
             }
-            var outputBufferTemp = new byte[length]; // contains more than enough space
+            
+            var outputBufferTemp = new byte[length]; // Contains more than enough space
             int bytesWritten = encoder.Encode(encoderInputBuffer.ShortBuffer, 0, samplesToEncode, outputBufferTemp, 0, length);
             var encoded = new byte[bytesWritten];
+            
             Array.Copy(outputBufferTemp, 0, encoded, 0, bytesWritten);
             ShiftLeftoverSamplesDown(samplesToEncode);
-            Debug.WriteLine(String.Format("NSpeex: In {0} bytes, encoded {1} bytes [enc frame size = {2}]", length, bytesWritten, encoder.FrameSize));
+            //Debug.WriteLine(String.Format("NSpeex: In {0} bytes, encoded {1} bytes [enc frame size = {2}]", length, bytesWritten, encoder.FrameSize));
+            
             return encoded;
         }
 
@@ -94,19 +98,36 @@ namespace Voiperinho
 
         private void FeedSamplesIntoEncoderInputBuffer(byte[] data, int offset, int length)
         {
-            Array.Copy(data, offset, encoderInputBuffer.ByteBuffer, encoderInputBuffer.ByteBufferCount, length);
-            encoderInputBuffer.ByteBufferCount += length;
+            try
+            {
+                Array.Copy(data, offset, encoderInputBuffer.ByteBuffer, encoderInputBuffer.ByteBufferCount, length);
+                encoderInputBuffer.ByteBufferCount += length;
+            }
+            catch (Exception)
+            {
+                // Eat the exception if it happens as it isn't really relevant to us
+            }
         }
 
         public byte[] Decode(byte[] data, int offset, int length)
         {
             var outputBufferTemp = new byte[length * 320];
             var wb = new WaveBuffer(outputBufferTemp);
-            int samplesDecoded = decoder.Decode(data, offset, length, wb.ShortBuffer, 0, false);
-            int bytesDecoded = samplesDecoded * 2;
-            var decoded = new byte[bytesDecoded];
-            Array.Copy(outputBufferTemp, 0, decoded, 0, bytesDecoded);
-            Debug.WriteLine(String.Format("NSpeex: In {0} bytes, decoded {1} bytes [dec frame size = {2}]", length, bytesDecoded, decoder.FrameSize));
+            byte[] decoded = null;
+
+            try
+            {
+                int samplesDecoded = decoder.Decode(data, offset, length, wb.ShortBuffer, 0, false);
+                int bytesDecoded = samplesDecoded * 2;
+                decoded = new byte[bytesDecoded];
+                Array.Copy(outputBufferTemp, 0, decoded, 0, bytesDecoded);
+            }
+            catch (Exception)
+            {
+                // Eat the exception if it happens as it isn't really relevant to us                
+            }
+            
+            //Debug.WriteLine(String.Format("NSpeex: In {0} bytes, decoded {1} bytes [dec frame size = {2}]", length, bytesDecoded, decoder.FrameSize));
             return decoded;
         }
 

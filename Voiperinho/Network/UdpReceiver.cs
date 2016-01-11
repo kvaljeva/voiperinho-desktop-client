@@ -15,14 +15,12 @@ namespace Voiperinho.Network
         public delegate void DataReceivedEventHandler(byte[] data);
         public event DataReceivedEventHandler SocketDataReceived;
 
-        public UdpReceiver(IPEndPoint endPoint)
+        public UdpReceiver(UdpClient client)
         {
             this.isConnectionOpen = true;
-            this.endPoint = endPoint;
 
-            this.udpReceiver = new UdpClient();
-            this.udpReceiver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            this.udpReceiver.Client.Bind(this.endPoint);
+            this.udpReceiver = client;
+            this.endPoint = new IPEndPoint(IPAddress.Any, 9999);
 
             this.recvThread = new Thread(Run);
             this.recvThread.IsBackground = true;
@@ -36,6 +34,8 @@ namespace Voiperinho.Network
                 while (this.isConnectionOpen)
                 {
                     byte[] data = this.udpReceiver.Receive(ref this.endPoint);
+
+                    Console.WriteLine("Data received.");
 
                     if (this.SocketDataReceived != null) this.SocketDataReceived.Invoke(data);
                 }

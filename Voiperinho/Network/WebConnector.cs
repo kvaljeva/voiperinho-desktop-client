@@ -13,8 +13,8 @@ namespace Voiperinho.Network
     {
         private static WebClient webClient;
         private const string baseUrl = "http://thedevspot.xyz:90/user/";
-        private const string baseRequestUrl = "http://thedevspot.xyz:90/requests";
-        private const string baseContactsUrl = "http://thedevspot.xyz:90/contacts";
+        private const string baseRequestUrl = "http://thedevspot.xyz:90/requests/";
+        private const string baseContactsUrl = "http://thedevspot.xyz:90/contacts/";
 
         private static string SendData(string url, NameValueCollection postData) 
         {
@@ -55,6 +55,28 @@ namespace Voiperinho.Network
             }
 
             return jsonString;
+        }
+
+        private static bool BaseValidationCallback(string data)
+        {
+            BaseResponse<string> response = null;
+
+            if (data != string.Empty)
+            {
+                try
+                {
+                    response = JsonConvert.DeserializeObject<BaseResponse<string>>(data);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("An error occured while parsing received contacts insert JSON data: " + ex.Message);
+                    return false;
+                }
+            }
+
+            if (response != null && response.Status == 200) return true;
+
+            return false;
         }
 
         public static ContactsInformation GetContactsData(int accountId)
@@ -118,7 +140,7 @@ namespace Voiperinho.Network
             return users.Data;
         }
 
-        public static bool SendRequest(string requestText, int requesterId, int userId)
+        public static int SendRequest(string requestText, int requesterId, int userId)
         {
             string data = string.Empty;
             NameValueCollection postParams = new NameValueCollection();
@@ -126,7 +148,7 @@ namespace Voiperinho.Network
             postParams.Add("requesterId", requesterId.ToString());
             postParams.Add("requestText", requestText);
 
-            data = SendData(baseRequestUrl + "/insert", postParams);
+            data = SendData(baseRequestUrl + "insert", postParams);
 
             BaseResponse<string> response = null;
 
@@ -139,71 +161,69 @@ namespace Voiperinho.Network
                 catch (Exception ex)
                 {
                     Console.WriteLine("An error occured while parsing received request JSON data: " + ex.Message);
-                    return false;
+                    return 0;
                 }
             }
 
             if (response != null && response.Status == 200)
             {
-                return true;
+                return int.Parse(response.Data);
             }
 
-            return false;
+            return 0;
         }
 
         public static bool DeleteRequest(int requestId)
         {
             string data = string.Empty;
-            BaseResponse<string> response = null;
             NameValueCollection postParams = new NameValueCollection();
 
             postParams.Add("request_id", requestId.ToString());
 
-            data = SendData(baseRequestUrl + "/edit", postParams);
+            data = SendData(baseRequestUrl + "edit", postParams);
 
-            if (data != string.Empty)
-            {
-                try
-                {
-                    response = JsonConvert.DeserializeObject<BaseResponse<string>>(data);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("An error occured while parsing received request deletion JSON data: " + ex.Message);
-                    return false;
-                }
-            }
-
-            if (response != null && response.Status == 200) return true;
-
-            return false;
+            return BaseValidationCallback(data);
         }
 
         public static bool AddContact(int requester, int contact)
         {
             string data = string.Empty;
             NameValueCollection postParams = new NameValueCollection();
-            BaseResponse<string> response = null;
 
             postParams.Add("userId", requester.ToString());
             postParams.Add("contactId", contact.ToString());
 
-            data = SendData(baseContactsUrl + "/insert", postParams);
+            data = SendData(baseContactsUrl + "insert", postParams);
 
-            if (data != string.Empty)
-            {
-                try 
-	            {
-                    response = JsonConvert.DeserializeObject<BaseResponse<string>>(data);		
-	            }
-	            catch (Exception ex)
-	            {
-		            Console.WriteLine("An error occured while parsing received contacts insert JSON data: " + ex.Message);
-                    return false;
-	            }
-            }
+            return BaseValidationCallback(data);
+        }
 
-            return false;
+        public static bool Register(string username, string password, string email, string avatar)
+        {
+            string data = string.Empty;
+            NameValueCollection postParams = new NameValueCollection();
+
+            postParams.Add("username", username);
+            postParams.Add("password", password);
+            postParams.Add("email", email);
+            postParams.Add("avatar", avatar);
+
+            data = SendData(baseUrl + "insert", postParams);
+
+            return BaseValidationCallback(data);
+        }
+
+        public static bool RemoveContact(string userId, string ownId)
+        {
+            string data = string.Empty;
+            NameValueCollection postParams = new NameValueCollection();
+
+            postParams.Add("user_id", userId);
+            postParams.Add("own_id", ownId);
+
+            data = SendData(baseContactsUrl + "delete/" + userId, postParams);
+
+            return BaseValidationCallback(data);
         }
     }
 }

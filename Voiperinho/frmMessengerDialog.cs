@@ -6,23 +6,27 @@ using System.Windows.Forms;
 using Voiperinho.Properties;
 using Voiperinho.Models;
 using Voiperinho.Network;
+using Voiperinho.Helpers;
+using Voiperinho.UserInterface;
+using System.Media;
 
 namespace Voiperinho
 {
-    public partial class frmMessengerDialog : Form
+    public partial class FrmMessengerDialog : Form
     {
         #region Private Fields
 
-        private frmAuthorizationDialog frmAuthDialog;
+        private FrmAuthorizationDialog frmAuthDialog;
         private SocketConnectionHelper socketHelper;
         private ContactsInformation contacts;
         private List<RequestInformation> requests;
         private AccountInformation accountInfo;
         private List<UserInfoContainer> listContactContainer;
         private List<MessengerContainer> listMessengerContainer;
-        private RequestContainer requestContainer;
         private Panel pnlAvailableUsers;
         private Panel pnlAvailableRequests;
+        private SoundPlayer notificationSoundPlayer;
+        private SoundPlayer callSoundPlayer;
         private bool isApplicationClosing;
         private bool isSearchViewLoaded;
 
@@ -40,17 +44,26 @@ namespace Voiperinho
             get { return this.listContactContainer; }
         }
 
+        public SoundPlayer CallSoundPlayer
+        {
+            get { return this.callSoundPlayer; }
+        }
+
         #endregion
 
         #region Constructors
 
-        public frmMessengerDialog()
+        public FrmMessengerDialog()
         {
             InitializeComponent();
 
             socketHelper = new SocketConnectionHelper();
             socketHelper.SocketDataReceived += socketHelper_SocketDataReceived;
             socketHelper.ServerSocketClosed += socketHelper_ServerSocketClosed;
+            socketHelper.CallEstablished += socketHelper_CallEstablished;
+
+            this.notificationSoundPlayer = new SoundPlayer(Resources.NotificationSound);
+            this.callSoundPlayer = new SoundPlayer(Resources.CallSound);
         }
 
         #endregion
@@ -71,6 +84,13 @@ namespace Voiperinho
         private void socketHelper_ServerSocketClosed()
         {
             this.UpdateClientOnDisconnect();
+        }
+
+        private void socketHelper_CallEstablished()
+        {
+            MessengerContainer msgWindow = GetActiveMessengerContainer();
+
+            if (msgWindow != null) msgWindow.UpdateCallState();
         }
 
         private void socketHelper_SocketDataReceived(string data)
@@ -181,29 +201,31 @@ namespace Voiperinho
 
                 if (message.Command.Equals("/call"))
                 {
-                    MessengerContainer msgWindow = GetActiveContainer(message.Sender);
+                    this.callSoundPlayer.PlayLooping();
+
+                    MessengerContainer msgWindow = GetActiveMessengerContainer(message.Sender);
                     if (msgWindow != null)
-                    {
+                    {                        
                         msgWindow.CreateCallDialog(message.Sender);
                         msgWindow.callDialog.CallStateChanged += callDialog_CallStateChanged;
                     }
                 }
                 else if (message.Command.Contains("/accept"))
                 {
-                    MessengerContainer msgWindow = GetActiveContainer(message.Sender);
+                    MessengerContainer msgWindow = GetActiveMessengerContainer(message.Sender);
 
                     if (msgWindow != null) msgWindow.InitiatingCall = false;
 
-                    this.socketHelper.EstablishCall(message.Content);
+                    this.socketHelper.EstablishCall(this.accountInfo.Username);
                 }
                 else if (message.Command.Contains("/close"))
                 {
                     if (this.socketHelper.CallHelper != null)
                     {
-                        this.socketHelper.CallHelper.CloseCall();
+                        this.socketHelper.CloseCall();
                     }
 
-                    MessengerContainer msgWindow = GetActiveContainer(message.Sender);
+                    MessengerContainer msgWindow = GetActiveMessengerContainer(message.Sender);
                     if (msgWindow != null)
                     {
                         msgWindow.InitiatingCall = false;
@@ -221,6 +243,8 @@ namespace Voiperinho
                 else
                 {
                     this.DumpMessage(message);
+
+                    this.notificationSoundPlayer.Play();
                     SetContainerNotification(message.Sender);
                 }
             }
@@ -234,25 +258,27 @@ namespace Voiperinho
                 return;
             }
 
-            MessengerContainer msgWindow = GetActiveContainer();
+            // Stop the calling sound if user either accepts or declines the call
+            this.callSoundPlayer.Stop();
+
+            MessengerContainer msgWindow = GetActiveMessengerContainer(caller);
 
             if (msgWindow != null)
             {
                 if (state)
                 {
-                    this.socketHelper.EstablishCall();
-                    this.socketHelper.SendMessage(caller, socketHelper.CallHelper.CallId, this.accountInfo.Username, @"/call/accept");
+                    this.socketHelper.EstablishCall(this.accountInfo.Username);
+                    this.socketHelper.SendMessage(caller, "", this.accountInfo.Username, @"/call/accept");
                 }
                 else
                 {
-                    msgWindow.callDialog.CallStateChanged -= callDialog_CallStateChanged;
                     this.socketHelper.SendMessage(caller, "", this.accountInfo.Username, @"/call/close");
                 }
 
                 if (msgWindow.InitiatingCall)
                     msgWindow.InitiatingCall = false;
-    
-                msgWindow.UpdateCallState();
+
+                msgWindow.callDialog.CallStateChanged -= callDialog_CallStateChanged;
             }
         }
 
@@ -273,7 +299,7 @@ namespace Voiperinho
 
             if (this.frmAuthDialog == null)
             {
-                this.frmAuthDialog = new frmAuthorizationDialog();
+                this.frmAuthDialog = new FrmAuthorizationDialog();
                 this.frmAuthDialog.ShowDialog(this);
 
                 if (this.frmAuthDialog.DialogResult == DialogResult.OK)
@@ -294,6 +320,7 @@ namespace Voiperinho
                     socketHelper.Disconnect();
                     socketHelper.CloseConnection();
 
+                    this.lblResponseDescription.Text = "Status - No connection.";
                     this.frmAuthDialog = null;
                 }
             }
@@ -353,10 +380,11 @@ namespace Voiperinho
         {
             UserInfoContainer requestContainer = sender as UserInfoContainer;
 
-            this.requests.RemoveAll(request => request.Requester.Id == requestContainer.UserId);
-
             AddRequestToContacts(requestContainer);
             requestContainer.UpdateContacts();
+
+            // After we're done with the request, remove it from the list
+            this.requests.RemoveAll(request => request.Requester.Id == requestContainer.UserId);
 
             if (requests.Count == 0)
             {
@@ -366,26 +394,29 @@ namespace Voiperinho
 
         private void container_AddUserPressed(string username, object sender)
         {
-            if (requestContainer != null) return;
-
             UserInfoContainer activeContainer = sender as UserInfoContainer;
 
-            requestContainer = new RequestContainer(username, this.accountInfo.Id, activeContainer.UserId, this.socketHelper, this.accountInfo);
+            RequestContainer requestContainer = new RequestContainer(username, this.accountInfo.Id, activeContainer.UserId, this.socketHelper, this.accountInfo);
             requestContainer.Name = "controlRequestContainer_" + username;
-            requestContainer.Location = new Point(pnlDashboard.Right, (activeContainer.Top));
+            requestContainer.Location = new Point(pnlDashboard.Right, ((activeContainer.Top + activeContainer.Height / 2) - 10));
 
             // Add the control and set it atop on all of the existing controls
             this.Controls.Add(requestContainer);
-            this.requestContainer.BringToFront();
+            requestContainer.BringToFront();
         }
 
         private void contactBox_MouseClick(object sender, MouseEventArgs e)
         {
             UserInfoContainer contactContainer = sender as UserInfoContainer;
 
-            if (contactContainer.Parent == this.pnlContactsContainer)
+            if ((contactContainer.Parent == this.pnlContactsContainer) || (contactContainer.Parent == this.pnlAvailableRequests))
             {
-                this.LoadMessengerLayout(contactContainer.Username);
+                this.LoadMessengerLayout(contactContainer.Username, contactContainer.RequestNote); // fix
+            }
+
+            if (e.Button == MouseButtons.Right && !contactContainer.IsRequest)
+            {
+                this.menuContactOptions.Show(Cursor.Position);
             }
 
             if (this.isSearchViewLoaded)
@@ -434,14 +465,22 @@ namespace Voiperinho
 
         private void frmMessengerDialog_MouseClick(object sender, MouseEventArgs e)
         {
-            if (this.Controls.Contains(this.requestContainer))
+            foreach (Control control in this.Controls)
             {
-                this.Controls.Remove(this.requestContainer);
+                if (control is RequestContainer)
+                {
+                    RequestContainer requestContainer = control as RequestContainer;
 
-                this.requestContainer.Dispose();
-                this.requestContainer = null;
+                    if (this.Controls.Contains(requestContainer))
+                    {
+                        this.Controls.Remove(requestContainer);
 
-                this.Invalidate();
+                        requestContainer.Dispose();
+                        requestContainer = null;
+
+                        this.Invalidate();
+                    }
+                }
             }
         }
 
@@ -459,14 +498,16 @@ namespace Voiperinho
         {
             this.isApplicationClosing = true;
 
-            socketHelper.Disconnect();
+            this.socketHelper.Disconnect();
+            if (this.notificationSoundPlayer != null) this.notificationSoundPlayer.Dispose();
+            if (this.callSoundPlayer != null) this.callSoundPlayer.Dispose();
 
             this.lblResponseDescription.Text = "Status - Disconnected.";
         }
 
         private void frmMessengerDialog_KeyDown(object sender, KeyEventArgs e)
         {
-            MessengerContainer msgWindow = GetActiveContainer();
+            MessengerContainer msgWindow = GetActiveMessengerContainer();
 
             if (msgWindow != null)
             {
@@ -492,7 +533,7 @@ namespace Voiperinho
 
                     this.pnlAvailableUsers.Name = "pnlAvailableUsers";
                     this.pnlAvailableUsers.Location = pnlContactsContainer.Location;
-                    this.pnlAvailableUsers.Size = pnlContactsContainer.Size;
+                    this.pnlAvailableUsers.Size = new Size(pnlContactsContainer.Size.Width, pnlContactsContainer.Size.Height - txtSearch.Height);
                 }
                 else this.ClearAvailableUsersList();
 
@@ -521,7 +562,7 @@ namespace Voiperinho
 
         #region UI Helper Methods
 
-        private void CreateMessengerLayout(string messengerIdentifier)
+        private void CreateMessengerLayout(string messengerIdentifier, string requestText = "")
         {
             // Hide the picturebox with the logo
             this.pboxLogo.Hide();
@@ -539,6 +580,8 @@ namespace Voiperinho
 
             this.listMessengerContainer.Add(messagerContainer);
             this.DumpMessage(Environment.NewLine + "\tClient started.");
+
+            if (requestText != string.Empty) this.DumpMessage(requestText);
         }
 
         private void ClearMessengerLayouts()
@@ -554,7 +597,7 @@ namespace Voiperinho
             this.Invalidate();
         }
 
-        private MessengerContainer GetActiveContainer()
+        private MessengerContainer GetActiveMessengerContainer()
         {
             foreach (Control control in this.Controls)
             {
@@ -570,7 +613,7 @@ namespace Voiperinho
             return null;
         }
 
-        private MessengerContainer GetActiveContainer(string contact)
+        private MessengerContainer GetActiveMessengerContainer(string contact)
         {
             foreach (Control control in this.Controls)
             {
@@ -586,7 +629,7 @@ namespace Voiperinho
             return null;
         }
 
-        private void LoadMessengerLayout(string identifier)
+        private void LoadMessengerLayout(string identifier, string requestText = "")
         {
             bool windowExists = false;
             MessengerContainer msgWindow = null;
@@ -609,7 +652,7 @@ namespace Voiperinho
             }
             else
             {
-                this.CreateMessengerLayout(identifier);
+                this.CreateMessengerLayout(identifier, requestText);
             }
         }
 
@@ -683,7 +726,7 @@ namespace Voiperinho
 
                 foreach (RequestInformation request in this.requests)
                 {
-                    UserInfoContainer requestBox = new UserInfoContainer(request.Requester.Username, request.RequesterId);
+                    UserInfoContainer requestBox = new UserInfoContainer(request.Requester.Username, request.RequesterId, request.RequestText);
                     requestBox.Name = "request_" + request.Requester.Username;
                     requestBox.Parent = this.pnlAvailableRequests;
                     requestBox.Location = new Point(0, contactControlOffset);
@@ -743,20 +786,20 @@ namespace Voiperinho
 
                 // Add click handler for each consecutive container so that they fire independently of one another (per object)
                 contactBox.MouseClick += contactBox_MouseClick;
+                contactBox.AddUserPressed += container_AddUserPressed;
             }
 
-            UserInfoContainer.AddUserPressed += container_AddUserPressed;
             this.pnlAvailableUsers.Invalidate();
         }
 
-        private void RepositionRemainingRequests(UserInfoContainer container)
+        private void RepositionUserContainers(Panel activePanel, UserInfoContainer container)
         {
             // If there are any requests that are positioned lower on the panel than the current request, reposition them
-            for (int i = this.pnlAvailableRequests.Controls.Count - 1; i > 0; i--)
+            for (int i = activePanel.Controls.Count - 1; i > 0; i--)
             {
-                if (this.pnlAvailableRequests.Controls[i] is UserInfoContainer)
+                if (activePanel.Controls[i] is UserInfoContainer)
                 {
-                    UserInfoContainer control = this.pnlAvailableRequests.Controls[i] as UserInfoContainer;
+                    UserInfoContainer control = activePanel.Controls[i] as UserInfoContainer;
 
                     if (control.Location.Y > container.Location.Y)
                         control.Location = new Point(control.Location.X, (control.Location.Y - control.Height));
@@ -764,11 +807,32 @@ namespace Voiperinho
             }
         }
 
+        private void RespositionContacts(UserInfoContainer container)
+        {
+            this.RepositionUserContainers(this.pnlContactsContainer, container);
+        }
+
+        private void RepositionRemainingRequests(UserInfoContainer container)
+        {
+            this.RepositionUserContainers(this.pnlAvailableRequests, container);
+        }
+
         private void AddRequestToContacts(UserInfoContainer container)
         {
-            RepositionRemainingRequests(container);
-
             int contactListBottom = GetContactsListLength();
+            int requestId = 0;
+
+            // Get the ID of the request itself
+            foreach (RequestInformation request in this.requests)
+            {
+                if (request.Requester.Id == container.UserId)
+                {
+                    requestId = request.Id;
+                    break;
+                }
+            }
+
+            RepositionRemainingRequests(container);
 
             container.Location = new Point(0, contactListBottom);
             contactListBottom += container.Height;
@@ -780,7 +844,10 @@ namespace Voiperinho
             int offset = GetContactsListLength();
             this.pnlAvailableRequests.Location = new Point(this.pnlAvailableRequests.Location.X, offset);
 
+            // Send query to the API so that we actually add the user to the database
             WebConnector.AddContact(this.accountInfo.Id, container.UserId);
+            // Remove the request
+            WebConnector.DeleteRequest(requestId);
 
             // Tell server to propagate the request to the accepted client if he's currently available
             string jsonClientInfo = JsonConvert.SerializeObject(this.accountInfo);
@@ -829,6 +896,19 @@ namespace Voiperinho
                     }
                 }
             }
+        }
+
+        private UserInfoContainer GetActiveUserContainer()
+        {
+            foreach (UserInfoContainer contactContainer in this.listContactContainer)
+            {
+                if (contactContainer.IsSelected)
+                {
+                    return contactContainer;
+                }
+            }
+
+            return null;
         }
 
         private void RemoveContainerNotification()
@@ -887,12 +967,11 @@ namespace Voiperinho
 
             MessengerContainer msgWindow;
 
-            msgWindow = (message.Sender != null && message.Sender != this.accountInfo.Username) ? GetActiveContainer(message.Sender) : GetActiveContainer();
+            msgWindow = (message.Sender != null && message.Sender != this.accountInfo.Username) ? GetActiveMessengerContainer(message.Sender) : GetActiveMessengerContainer();
 
             if (msgWindow != null)
             {
                 msgWindow.AppendText(message);
-                msgWindow.inputContainer.Text = string.Empty;
                 msgWindow.inputContainer.Focus();
             }
         }
@@ -901,7 +980,7 @@ namespace Voiperinho
         {
             MessengerContainer msgWindow;
 
-            msgWindow = GetActiveContainer();
+            msgWindow = GetActiveMessengerContainer();
 
             if (msgWindow != null)
             {
@@ -996,6 +1075,28 @@ namespace Voiperinho
             Size length = TextRenderer.MeasureText(this.lblResponseDescription.Text, this.lblResponseDescription.Font);
 
             lblResponseDescription.Location = new Point(this.pnlStatusBar.Width - length.Width - 5, this.lblResponseDescription.Location.Y);
+        }
+
+        private void sendIMToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessengerContainer msgWindow = GetActiveMessengerContainer();
+            msgWindow.inputContainer.Focus();
+        }
+
+        private void removeFromContactsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UserInfoContainer activeContainer = GetActiveUserContainer();
+
+            if (activeContainer != null)
+            {
+                int userId = activeContainer.UserId;
+
+                // Add connector line
+                WebConnector.RemoveContact(userId.ToString(), this.accountInfo.Id.ToString());
+
+                this.RespositionContacts(activeContainer);
+                this.pnlContactsContainer.Controls.Remove(activeContainer);
+            }
         }
     }
 }

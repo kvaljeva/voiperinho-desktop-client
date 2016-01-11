@@ -16,7 +16,7 @@ namespace Voiperinho
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmMessengerDialog());
+            Application.Run(new FrmMessengerDialog());
         }
     }
 }

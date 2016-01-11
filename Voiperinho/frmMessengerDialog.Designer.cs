@@ -1,6 +1,6 @@
 ﻿namespace Voiperinho
 {
-    partial class frmMessengerDialog
+    partial class FrmMessengerDialog
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMessengerDialog));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMessengerDialog));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.voiperinhoItem = new System.Windows.Forms.ToolStripMenuItem();
             this.connectItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,11 +45,16 @@
             this.pnlStatusBar = new System.Windows.Forms.Panel();
             this.lblResponseDescription = new System.Windows.Forms.Label();
             this.pboxLogo = new System.Windows.Forms.PictureBox();
+            this.menuContactOptions = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.sendIMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.removeFromContactsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.pnlDashboard.SuspendLayout();
             this.pnlContactsContainer.SuspendLayout();
             this.pnlStatusBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pboxLogo)).BeginInit();
+            this.menuContactOptions.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -198,11 +203,11 @@
             this.lblResponseDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lblResponseDescription.AutoSize = true;
             this.lblResponseDescription.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblResponseDescription.Location = new System.Drawing.Point(509, 5);
+            this.lblResponseDescription.Location = new System.Drawing.Point(559, 5);
             this.lblResponseDescription.Name = "lblResponseDescription";
-            this.lblResponseDescription.Size = new System.Drawing.Size(173, 13);
+            this.lblResponseDescription.Size = new System.Drawing.Size(124, 13);
             this.lblResponseDescription.TabIndex = 3;
-            this.lblResponseDescription.Text = "Server response - no connection";
+            this.lblResponseDescription.Text = "Status - no connection";
             this.lblResponseDescription.TextChanged += new System.EventHandler(this.lblResponseDescription_TextChanged);
             // 
             // pboxLogo
@@ -217,7 +222,36 @@
             this.pboxLogo.TabIndex = 10;
             this.pboxLogo.TabStop = false;
             // 
-            // frmMessengerDialog
+            // menuContactOptions
+            // 
+            this.menuContactOptions.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sendIMToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.removeFromContactsToolStripMenuItem});
+            this.menuContactOptions.Name = "menuContactOptions";
+            this.menuContactOptions.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.menuContactOptions.Size = new System.Drawing.Size(195, 76);
+            // 
+            // sendIMToolStripMenuItem
+            // 
+            this.sendIMToolStripMenuItem.Name = "sendIMToolStripMenuItem";
+            this.sendIMToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.sendIMToolStripMenuItem.Text = "Send IM";
+            this.sendIMToolStripMenuItem.Click += new System.EventHandler(this.sendIMToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(191, 6);
+            // 
+            // removeFromContactsToolStripMenuItem
+            // 
+            this.removeFromContactsToolStripMenuItem.Name = "removeFromContactsToolStripMenuItem";
+            this.removeFromContactsToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.removeFromContactsToolStripMenuItem.Text = "Remove from contacts";
+            this.removeFromContactsToolStripMenuItem.Click += new System.EventHandler(this.removeFromContactsToolStripMenuItem_Click);
+            // 
+            // FrmMessengerDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -229,7 +263,7 @@
             this.Controls.Add(this.menuStrip);
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip;
-            this.Name = "frmMessengerDialog";
+            this.Name = "FrmMessengerDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Voiperinho";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMessengerDialog_FormClosing);
@@ -244,6 +278,7 @@
             this.pnlStatusBar.ResumeLayout(false);
             this.pnlStatusBar.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pboxLogo)).EndInit();
+            this.menuContactOptions.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -266,6 +301,10 @@
         private System.Windows.Forms.Label lblResponseDescription;
         private System.Windows.Forms.Panel pnlStatusBar;
         private System.Windows.Forms.PictureBox pboxLogo;
+        private System.Windows.Forms.ContextMenuStrip menuContactOptions;
+        private System.Windows.Forms.ToolStripMenuItem sendIMToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem removeFromContactsToolStripMenuItem;
     }
 }
 
